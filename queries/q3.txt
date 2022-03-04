@@ -1,0 +1,19 @@
+CREATE VIEW aftercovid AS
+SELECT DATE(odate), COUNT(odate) 
+FROM shootings
+WHERE odate BETWEEN '2020-01-23' AND '2021-12-01' 
+GROUP BY odate;
+
+CREATE VIEW beforecovid AS
+SELECT DATE(odate), COUNT(odate)
+FROM shootings
+WHERE odate BETWEEN '2018-01-23' AND '2019-12-01' 
+GROUP BY odate;
+
+
+
+SELECT SUM(count) as shooting FROM beforecovid;
+
+SELECT SUM(count) as shooting FROM aftercovid;
+
+

@@ -1,0 +1,137 @@
+CREATE VIEW assault_1 AS
+ SELECT hood_id, premise, COUNT(crime)
+ FROM crimeindicator
+ WHERE crime='Assault'
+ GROUP BY hood_id,premise 
+ ORDER BY hood_id,count DESC;
+
+
+ CREATE VIEW assault_2 AS
+ SELECT a.hood_id, a.premise, a.count
+ FROM assault_1 a, assault_1 b
+ WHERE a.hood_id = b.hood_id AND a.premise!=b.premise AND a.count<b.count
+ GROUP BY a.hood_id, a.premise,a.count;
+
+ CREATE VIEW assault AS
+ SELECT hood_id,premise,count, 'Assault' as crime  FROM 
+((SELECT * FROM assault_1)
+ EXCEPT 
+(SELECT * FROM assault_2)) b
+ ORDER BY hood_id;
+
+
+-- ***********************************
+CREATE VIEW robbery_1 AS
+ SELECT hood_id, premise, COUNT(crime)
+ FROM crimeindicator
+ WHERE crime='Robbery'
+ GROUP BY hood_id,premise 
+ ORDER BY hood_id,count DESC;
+
+
+ CREATE VIEW robbery_2 AS
+ SELECT a.hood_id, a.premise, a.count
+ FROM robbery_1 a, robbery_1 b
+ WHERE a.hood_id = b.hood_id AND a.premise!=b.premise AND a.count<b.count
+ GROUP BY a.hood_id, a.premise,a.count;
+
+ CREATE VIEW robbery AS
+ SELECT hood_id,premise,count, 'Robbery' as crime  FROM 
+((SELECT * FROM robbery_1)
+ EXCEPT 
+(SELECT * FROM robbery_2)) b
+ ORDER BY hood_id;
+ 
+-- ***********************************
+CREATE VIEW theft_over_1 AS
+ SELECT hood_id, premise, COUNT(crime)
+ FROM crimeindicator
+ WHERE crime='Theft Over'
+ GROUP BY hood_id,premise 
+ ORDER BY hood_id,count DESC;
+
+
+ CREATE VIEW theft_over_2 AS
+ SELECT a.hood_id, a.premise, a.count
+ FROM theft_over_1 a, theft_over_1 b
+ WHERE a.hood_id = b.hood_id AND a.premise!=b.premise AND a.count<b.count
+ GROUP BY a.hood_id, a.premise,a.count;
+
+ CREATE VIEW theft_over AS
+ SELECT hood_id,premise,count, 'Theft Over' as crime  FROM 
+((SELECT * FROM theft_over_1)
+ EXCEPT 
+(SELECT * FROM theft_over_2)) b
+ ORDER BY hood_id;
+ 
+-- ***********************************
+CREATE VIEW break_and_enter_1 AS
+ SELECT hood_id, premise, COUNT(crime)
+ FROM crimeindicator
+ WHERE crime='Break and Enter'
+ GROUP BY hood_id,premise 
+ ORDER BY hood_id,count DESC;
+
+
+ CREATE VIEW break_and_enter_2 AS
+ SELECT a.hood_id, a.premise, a.count
+ FROM break_and_enter_1 a, break_and_enter_1 b
+ WHERE a.hood_id = b.hood_id AND a.premise!=b.premise AND a.count<b.count
+ GROUP BY a.hood_id, a.premise,a.count;
+
+ CREATE VIEW break_and_enter AS
+ SELECT hood_id,premise,count, 'Break and Enter' as crime  FROM 
+((SELECT * FROM break_and_enter_1)
+ EXCEPT 
+(SELECT * FROM break_and_enter_2)) b
+ ORDER BY hood_id;
+ 
+-- ***********************************
+CREATE VIEW auto_theft_1 AS
+ SELECT hood_id, premise, COUNT(crime)
+ FROM crimeindicator
+ WHERE crime='Auto Theft'
+ GROUP BY hood_id,premise 
+ ORDER BY hood_id,count DESC;
+
+
+ CREATE VIEW auto_theft_2 AS
+ SELECT a.hood_id, a.premise, a.count
+ FROM auto_theft_1 a, auto_theft_1 b
+ WHERE a.hood_id = b.hood_id AND a.premise!=b.premise AND a.count<b.count
+ GROUP BY a.hood_id, a.premise,a.count;
+
+ CREATE VIEW auto_theft AS
+ SELECT hood_id,premise,count, 'Auto Theft' as crime FROM 
+((SELECT * FROM auto_theft_1)
+ EXCEPT 
+(SELECT * FROM auto_theft_2)) b
+ ORDER BY hood_id;
+ 
+-- ***********************************
+CREATE VIEW part1_step1 AS 
+(select * from assault)
+UNION
+(select * from theft_over)
+UNION
+(select * from auto_theft)
+UNION
+(select * from break_and_enter)
+UNION
+(select * from robbery)
+ORDER BY hood_id, count;
+
+CREATE VIEW part1_step2 AS
+select part1_step1.hood_id,name,premise,count,crime from part1_step1
+join Neighbourhood on part1_step1.hood_id=Neighbourhood.hood_id;
+
+-- *****************************************************************
+CREATE VIEW part2_step1 AS 
+select hood_id,name,premise,rank() over (partition by hood_id order by count(premise) DESC) from part1_step2
+group by hood_id,premise,name
+order by hood_id;
+
+CREATE VIEW part2_step2 AS 
+select name,premise from part2_step1 where rank=1;
+
+

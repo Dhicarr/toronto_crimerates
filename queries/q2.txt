@@ -1,0 +1,20 @@
+--calculates the number of crimes/population of a neighbourhood
+drop view test1 cascade;
+create view test1 as
+select CrimeIndicator.Hood_ID,name, count(*)::float/population as crime_per from CrimeIndicator
+join Neighbourhood on CrimeIndicator.Hood_ID=Neighbourhood.Hood_ID
+where Crime='Robbery'
+group by CrimeIndicator.Hood_ID, population, name
+order by CrimeIndicator.Hood_ID;
+
+--Compares crime rate with how well off a neighbourhood is
+drop view test2 cascade;
+create view test2 as
+select score,crime_per,test1.name, rank() over (order by crime_per)
+from EquityScore join test1 on test1.name=EquityScore.name
+order by crime_per;
+
+--Averages the score of every 5 column to hopefully see a nicer trend
+select sum(score)/count(score) as avg_score, rank/5 as five_rows from test2
+group by rank/5
+order by rank/5;
